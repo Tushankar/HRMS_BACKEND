@@ -9,7 +9,7 @@ const testBackgroundCheckForm = async () => {
   try {
     console.log("Testing Background Check Form Integration...\n");
 
-    const baseURL = "http://localhost:1111";
+    const baseURL = "https://hrms-backend-vneb.onrender.com";
 
     // Create test IDs
     const testApplicationId = new mongoose.Types.ObjectId();

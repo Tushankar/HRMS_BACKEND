@@ -6,8 +6,8 @@ const testPhysicalFields = async () => {
   try {
     console.log("🔍 Testing Background Check Physical Fields...\n");
 
-    const baseURL = "http://localhost:1111"; // Change to your backend URL
-    // const baseURL = "http://localhost:1111";
+    const baseURL = "https://hrms-backend-vneb.onrender.com"; // Change to your backend URL
+    // const baseURL = "https://hrms-backend-vneb.onrender.com";
 
     // Use an existing application ID from your database
     // Replace with actual IDs from your system

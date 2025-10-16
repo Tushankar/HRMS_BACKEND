@@ -29,13 +29,14 @@ function mapCitizenshipStatusToFrontend(status) {
 // Save or update I-9 form
 router.post("/save-i9-form", async (req, res) => {
   try {
-    const { applicationId, employeeId, formData, status = "draft" } = req.body;
+    const { applicationId, employeeId, formData, status = "draft", hrFeedback } = req.body;
 
     console.log("I9 Form Save Request:");
     console.log("- ApplicationID:", applicationId);
     console.log("- EmployeeID:", employeeId);
     console.log("- Status:", status);
-    console.log("- FormData:", JSON.stringify(formData, null, 2));
+    console.log("- FormData:", formData ? "Present" : "undefined");
+    console.log("- HRFeedback:", hrFeedback ? "Present" : "undefined");
 
     if (!applicationId || !employeeId) {
       return res.status(400).json({ message: "Application ID and Employee ID are required" });
@@ -50,9 +51,20 @@ router.post("/save-i9-form", async (req, res) => {
     // Find existing form or create new one
     let i9Form = await I9Form.findOne({ applicationId });
     
+    // If only HR feedback is being updated (no formData)
+    if (!formData && hrFeedback) {
+      if (!i9Form) {
+        i9Form = new I9Form({ applicationId, employeeId, status });
+      }
+      i9Form.hrFeedback = hrFeedback;
+      i9Form.status = status;
+      await i9Form.save();
+      return res.status(200).json({ success: true, i9Form, message: "HR feedback saved successfully" });
+    }
+    
     if (i9Form) {
       // Update existing form - handle both nested and flat structures
-      if (formData.section1 || formData.section2) {
+      if (formData && (formData.section1 || formData.section2)) {
         // Nested structure from EditI9Form - apply citizenship status mapping
         if (formData.section1) {
           const mappedSection1 = { ...formData.section1 };

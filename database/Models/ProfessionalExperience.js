@@ -64,6 +64,19 @@ const ProfessionalExperienceSchema = new mongoose.Schema(
     convictedOfFelony: { type: Boolean },
     felonyExplanation: { type: String },
 
+    // Military Service
+    hasMilitaryService: { type: Boolean, default: false },
+    militaryService: {
+      branch: { type: String },
+      from: { type: String },
+      to: { type: String },
+      rankAtDischarge: { type: String },
+      typeOfDischarge: { type: String },
+      otherThanHonorable: { type: String },
+      mayContactSupervisor: { type: String },
+      reasonForLeaving: { type: String },
+    },
+
     // Documents
     resumePath: { type: String },
     coverLetterPath: { type: String },

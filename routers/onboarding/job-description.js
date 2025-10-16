@@ -831,6 +831,89 @@ router.get("/hr-get-all-rn-job-description-submissions", async (req, res) => {
   }
 });
 
+// Unified endpoint - Get template by position type
+router.get("/get-job-description-template/:positionType", async (req, res) => {
+  try {
+    const { positionType } = req.params;
+    let template;
+    
+    switch (positionType.toUpperCase()) {
+      case "PCA":
+        template = await PCAJobDescriptionTemplate.findOne({ isActive: true }).sort({ createdAt: -1 });
+        break;
+      case "CNA":
+        template = await CNAJobDescriptionTemplate.findOne({ isActive: true }).sort({ createdAt: -1 });
+        break;
+      case "LPN":
+        template = await LPNJobDescriptionTemplate.findOne({ isActive: true }).sort({ createdAt: -1 });
+        break;
+      case "RN":
+        template = await RNJobDescriptionTemplate.findOne({ isActive: true }).sort({ createdAt: -1 });
+        break;
+      default:
+        return res.status(400).json({ message: "Invalid position type" });
+    }
+    
+    if (!template) {
+      return res.status(404).json({ message: "No template found" });
+    }
+    
+    res.status(200).json({ message: "Template retrieved successfully", template });
+  } catch (error) {
+    console.error("Error getting template:", error);
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+});
+
+// Unified endpoint - Employee upload signed job description
+router.post("/employee-upload-signed-job-description", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+    
+    const { applicationId, employeeId, positionType } = req.body;
+    
+    if (!applicationId) return res.status(400).json({ message: "Application ID is required" });
+    if (!positionType) return res.status(400).json({ message: "Position type is required" });
+    
+    let jobDescription;
+    const JobModel = getJobDescriptionModel(positionType);
+    
+    jobDescription = await JobModel.findOne({ applicationId });
+    
+    if (!jobDescription) {
+      jobDescription = new JobModel({ applicationId, employeeId });
+    }
+    
+    jobDescription.employeeUploadedForm = {
+      filename: req.file.originalname,
+      filePath: req.file.path,
+      uploadedAt: new Date(),
+    };
+    jobDescription.status = "submitted";
+    
+    await jobDescription.save();
+    
+    // Update application completion
+    const application = await OnboardingApplication.findById(applicationId);
+    if (application) {
+      const formKey = `jobDescription${positionType.toUpperCase()}`;
+      if (!application.completedForms.includes(formKey)) {
+        application.completedForms.push(formKey);
+      }
+      application.completionPercentage = application.calculateCompletionPercentage();
+      await application.save();
+    }
+    
+    res.status(200).json({ 
+      message: `Signed ${positionType} Job Description form uploaded successfully`, 
+      jobDescription 
+    });
+  } catch (error) {
+    console.error("Error uploading signed form:", error);
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+});
+
 // HR clear PCA submission
 router.delete("/hr-clear-pca-submission/:id", async (req, res) => {
   try {
@@ -880,6 +963,48 @@ router.delete("/hr-clear-rn-submission/:id", async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+});
+
+// Save job description status (draft/completed)
+router.post("/job-description/save-status", async (req, res) => {
+  try {
+    const { applicationId, employeeId, positionType, status } = req.body;
+
+    if (!applicationId || !employeeId || !positionType) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+      });
+    }
+
+    const JobModel = getJobDescriptionModel(positionType);
+    let jobDesc = await JobModel.findOne({ applicationId });
+
+    if (jobDesc) {
+      jobDesc.status = status || "draft";
+      await jobDesc.save({ validateBeforeSave: status !== "draft" });
+    } else {
+      jobDesc = new JobModel({
+        applicationId,
+        employeeId,
+        status: status || "draft",
+      });
+      await jobDesc.save({ validateBeforeSave: status !== "draft" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Job description status saved as ${status}`,
+      data: jobDesc,
+    });
+  } catch (error) {
+    console.error("Error saving job description status:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
   }
 });
 

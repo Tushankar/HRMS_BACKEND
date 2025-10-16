@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const BASE_URL = "http://localhost:1111/onboarding";
+const BASE_URL = "https://hrms-backend-vneb.onrender.com/onboarding";
 const EMPLOYEE_ID = "67e0f8770c6feb6ba99d11d2";
 
 async function quickTest() {

@@ -433,7 +433,8 @@ router.post("/save-personal-information", async (req, res) => {
       });
     }
 
-    await personalInfoForm.save();
+    // Use validateBeforeSave: false for draft to skip validation
+    await personalInfoForm.save({ validateBeforeSave: status !== "draft" });
 
     // Update application progress
     if (status === "completed") {
@@ -543,7 +544,8 @@ router.post("/save-professional-experience", async (req, res) => {
       });
     }
 
-    await professionalExpForm.save();
+    // Use validateBeforeSave: false for draft to skip validation
+    await professionalExpForm.save({ validateBeforeSave: status !== "draft" });
 
     // Update application progress
     if (status === "completed") {

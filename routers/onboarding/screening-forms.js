@@ -1,4 +1,4 @@
-const express = require("express");
+﻿const express = require("express");
 const BackgroundCheck = require("../../database/Models/BackgroundCheck");
 const BackgroundCheckTemplate = require("../../database/Models/BackgroundCheckTemplate");
 const TBSymptomScreen = require("../../database/Models/TBSymptomScreen");
@@ -17,51 +17,62 @@ const router = express.Router();
 
 // Save or update Background Check form
 router.post("/save-background-check", async (req, res) => {
+  const mongoose = require("mongoose");
+  const User = require("../../database/Models/Users");
+  
   try {
-    console.log(
-      "🔵 Background check SAVE request received:",
-      JSON.stringify(req.body, null, 2)
-    );
-    console.log("🔵 Request headers:", req.headers.authorization ? "Bearer token present" : "No token");
-    const { applicationId, employeeId, formData, status = "draft" } = req.body;
+    console.log("ðŸ“¥ Request body:", JSON.stringify(req.body, null, 2));
+    const { applicationId, employeeId, formData, status = "draft", hrFeedback, userId, notes, formId } = req.body;
 
-    console.log("🟡 Parsed request data:");
-    console.log("   - applicationId:", applicationId);
-    console.log("   - employeeId:", employeeId);
-    console.log("   - status:", status);
-    console.log("   - formData keys:", formData ? Object.keys(formData) : "formData is null/undefined");
+    // Handle HR notes submission
+    if ((notes || hrFeedback) && !formData) {
+      console.log("ðŸ“ HR Notes mode - formId:", formId, "appId:", applicationId, "userId:", userId || employeeId);
+      
+      let form = null;
+      let actualEmployeeId = userId || employeeId;
 
-    if (formData) {
-      console.log("🟡 FormData detailed structure:");
-      console.log("   - applicantInfo:", formData.applicantInfo);
-      console.log("   - employmentInfo:", formData.employmentInfo);
-      console.log("   - applicantSignature:", formData.applicantSignature);
-      console.log("   - applicantSignatureDate:", formData.applicantSignatureDate);
-
-      if (formData.applicantInfo) {
-        console.log("🟡 ApplicantInfo field values:");
-        console.log("   - lastName:", formData.applicantInfo.lastName);
-        console.log("   - firstName:", formData.applicantInfo.firstName);
-        console.log("   - height:", formData.applicantInfo.height);
-        console.log("   - weight:", formData.applicantInfo.weight);
-        console.log("   - eyeColor:", formData.applicantInfo.eyeColor);
-        console.log("   - hairColor:", formData.applicantInfo.hairColor);
-        console.log("   - sex:", formData.applicantInfo.sex);
-        console.log("   - race:", formData.applicantInfo.race);
+      if (formId) {
+        form = await BackgroundCheck.findById(formId);
+      } else if (applicationId) {
+        form = await BackgroundCheck.findOne({ applicationId });
+      } else if (actualEmployeeId) {
+        if (!mongoose.Types.ObjectId.isValid(actualEmployeeId)) {
+          const user = await User.findOne({ email: actualEmployeeId });
+          if (user) actualEmployeeId = user._id;
+          else return res.status(404).json({ message: `User not found` });
+        }
+        form = await BackgroundCheck.findOne({ employeeId: actualEmployeeId });
+        if (!form) {
+          const application = await OnboardingApplication.findOne({ employeeId: actualEmployeeId });
+          if (application) form = await BackgroundCheck.findOne({ applicationId: application._id });
+        }
       }
 
-      if (formData.employmentInfo) {
-        console.log("🟡 EmploymentInfo field values:");
-        console.log("   - provider:", formData.employmentInfo.provider);
-        console.log("   - positionAppliedFor:", formData.employmentInfo.positionAppliedFor);
+      console.log("ðŸ“‹ Form found:", !!form);
+      if (!form) {
+        return res.status(404).json({ message: "Background check form not found" });
       }
+
+      form.hrFeedback = typeof hrFeedback === 'object' ? hrFeedback : {
+        comment: (notes || hrFeedback || "").trim(),
+        reviewedBy: actualEmployeeId || "HR",
+        reviewedAt: new Date(),
+      };
+      form.status = status === "draft" ? "under_review" : status;
+      await form.save();
+
+      console.log("âœ… HR feedback saved");
+      return res.status(200).json({ 
+        success: true, 
+        backgroundCheck: form, 
+        message: "HR feedback saved successfully" 
+      });
     }
 
+
+
     if (!applicationId || !employeeId) {
-      console.log("Missing required fields:", { applicationId, employeeId });
-      return res
-        .status(400)
-        .json({ message: "Application ID and Employee ID are required" });
+      return res.status(400).json({ message: "Application ID and Employee ID are required" });
     }
 
     // Check if application exists
@@ -72,15 +83,14 @@ router.post("/save-background-check", async (req, res) => {
         .json({ message: "Onboarding application not found" });
     }
 
-    // Find existing form or create new one
+    if (!formData) {
+      return res.status(400).json({ message: "Form data is required" });
+    }
+
     let backgroundCheckForm = await BackgroundCheck.findOne({ applicationId });
 
     if (backgroundCheckForm) {
-      console.log("🟡 UPDATING existing background check form");
-      console.log("🟡 Existing applicantInfo BEFORE merge:", backgroundCheckForm.applicantInfo);
-      console.log("🟡 Incoming applicantInfo to merge:", formData.applicantInfo);
-      
-      // Update existing form - merge formData properly
+      // Update existing form
       if (formData.applicantInfo) {
         // Deep merge for address object
         const existingAddress = backgroundCheckForm.applicantInfo?.address || {};
@@ -109,17 +119,7 @@ router.post("/save-background-check", async (req, res) => {
         };
         
         backgroundCheckForm.applicantInfo = mergedApplicantInfo;
-        
-        // Mark the nested object as modified for Mongoose to track changes
         backgroundCheckForm.markModified('applicantInfo');
-        
-        console.log("🟡 Merged applicantInfo AFTER merge:", backgroundCheckForm.applicantInfo);
-        console.log("🟡 Physical fields after merge:", {
-          height: backgroundCheckForm.applicantInfo.height,
-          weight: backgroundCheckForm.applicantInfo.weight,
-          eyeColor: backgroundCheckForm.applicantInfo.eyeColor,
-          hairColor: backgroundCheckForm.applicantInfo.hairColor,
-        });
       }
       if (formData.employmentInfo) {
         backgroundCheckForm.employmentInfo = {
@@ -151,14 +151,6 @@ router.post("/save-background-check", async (req, res) => {
       }
       backgroundCheckForm.status = status;
     } else {
-      console.log("🟢 CREATING new background check form");
-      console.log("🟢 Incoming applicantInfo:", formData.applicantInfo);
-      console.log("🟢 Physical fields in new form:", {
-        height: formData.applicantInfo?.height,
-        weight: formData.applicantInfo?.weight,
-        eyeColor: formData.applicantInfo?.eyeColor,
-        hairColor: formData.applicantInfo?.hairColor,
-      });
       
       // Ensure all fields are explicitly set, even if empty
       const newApplicantInfo = {
@@ -180,10 +172,6 @@ router.post("/save-background-check", async (req, res) => {
           zipCode: formData.applicantInfo?.address?.zipCode || "",
         },
       };
-      
-      console.log("🟢 Normalized applicantInfo for new form:", newApplicantInfo);
-      
-      // Create new form with proper structure
       backgroundCheckForm = new BackgroundCheck({
         applicationId,
         employeeId,
@@ -197,74 +185,19 @@ router.post("/save-background-check", async (req, res) => {
       });
     }
 
-    console.log("🟢 Saving background check form to database...");
-    console.log("🟢 Form data structure before save:", {
-      _id: backgroundCheckForm._id,
-      applicationId: backgroundCheckForm.applicationId,
-      employeeId: backgroundCheckForm.employeeId,
-      applicantInfo: backgroundCheckForm.applicantInfo,
-      employmentInfo: backgroundCheckForm.employmentInfo,
-      signature: backgroundCheckForm.applicantSignature,
-      signatureDate: backgroundCheckForm.applicantSignatureDate,
-      status: backgroundCheckForm.status,
-    });
+    await backgroundCheckForm.save({ validateBeforeSave: status !== "draft" });
 
-    await backgroundCheckForm.save();
-
-    console.log("🟢 Background check form saved successfully!");
-    console.log("🟢 Saved form ID:", backgroundCheckForm._id);
-    console.log("🟢 Final saved data:", backgroundCheckForm.toObject());
-    console.log("🟢 VERIFICATION - Physical fields in DB:", {
-      height: backgroundCheckForm.applicantInfo?.height,
-      weight: backgroundCheckForm.applicantInfo?.weight,
-      eyeColor: backgroundCheckForm.applicantInfo?.eyeColor,
-      hairColor: backgroundCheckForm.applicantInfo?.hairColor,
-      sex: backgroundCheckForm.applicantInfo?.sex,
-      race: backgroundCheckForm.applicantInfo?.race,
-      dateOfBirth: backgroundCheckForm.applicantInfo?.dateOfBirth,
-    });
-
-    // Update application progress
     if (status === "completed") {
-      console.log("🟢 Updating application progress (form completed)");
-      // Ensure completedForms array exists
-      if (!application.completedForms) {
-        application.completedForms = [];
-      }
-
-      // Check if Background Check is already marked as completed
+      if (!application.completedForms) application.completedForms = [];
       if (!application.completedForms.includes("Background Check")) {
         application.completedForms.push("Background Check");
-        console.log("🟢 Added 'Background Check' to completed forms list");
-      } else {
-        console.log("🟢 'Background Check' already in completed forms list");
       }
-
-      application.completionPercentage =
-        application.calculateCompletionPercentage();
+      application.completionPercentage = application.calculateCompletionPercentage();
       await application.save();
-      console.log("🟢 Application progress updated:", {
-        completedForms: application.completedForms,
-        completionPercentage: application.completionPercentage
-      });
-    } else {
-      console.log("📝 Form saved as draft - no progress update needed");
     }
 
-    const message =
-      status === "draft"
-        ? "Background check form saved as draft"
-        : "Background check form completed";
-
-    console.log("🟢 Sending response:", {
-      message,
-      backgroundCheckId: backgroundCheckForm._id,
-      completionPercentage: application.completionPercentage,
-      status: status
-    });
-
     res.status(200).json({
-      message,
+      message: status === "draft" ? "Background check form saved as draft" : "Background check form completed",
       backgroundCheck: backgroundCheckForm,
       completionPercentage: application.completionPercentage,
     });
@@ -367,7 +300,7 @@ router.get("/get-background-check/:applicationId", async (req, res) => {
         .json({ message: "Background check form not found" });
     }
 
-    console.log("🟢 GET Background Check - Retrieved RAW data:", {
+    console.log("ðŸŸ¢ GET Background Check - Retrieved RAW data:", {
       _id: backgroundCheck._id,
       applicationId: backgroundCheck.applicationId,
       hasApplicantInfo: !!backgroundCheck.applicantInfo,
@@ -541,7 +474,7 @@ router.post("/save-tb-symptom-screen", async (req, res) => {
       });
     }
 
-    await tbScreenForm.save();
+    await tbScreenForm.save({ validateBeforeSave: status !== "draft" });
 
     // Update application progress
     if (status === "completed") {

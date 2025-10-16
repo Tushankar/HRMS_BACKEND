@@ -112,7 +112,7 @@ router.post("/save-misconduct-statement", async (req, res) => {
       });
     }
 
-    await misconductForm.save();
+    await misconductForm.save({ validateBeforeSave: status !== "draft" });
 
     // Update application progress
     if (status === "completed") {
@@ -224,7 +224,7 @@ router.post("/save-code-of-ethics", async (req, res) => {
       });
     }
 
-    await codeOfEthicsForm.save();
+    await codeOfEthicsForm.save({ validateBeforeSave: status !== "draft" });
 
     // Update application progress
     if (status === "completed") {
@@ -405,7 +405,7 @@ router.get("/hr-get-all-code-of-ethics-submissions", async (req, res) => {
 // Save or update Service Delivery Policy form
 router.post("/save-service-delivery-policy", async (req, res) => {
   try {
-    const { applicationId, employeeId, formData, status = "draft" } = req.body;
+    const { applicationId, employeeId, formData, hrFeedback, status = "draft" } = req.body;
 
     if (!applicationId || !employeeId) {
       return res
@@ -419,6 +419,23 @@ router.post("/save-service-delivery-policy", async (req, res) => {
       return res
         .status(404)
         .json({ message: "Onboarding application not found" });
+    }
+
+    // Find existing form
+    let serviceDeliveryForm = await ServiceDeliveryPolicy.findOne({ applicationId });
+
+    // Handle HR feedback-only update
+    if (!formData && hrFeedback) {
+      if (!serviceDeliveryForm) {
+        return res.status(404).json({ message: "Service delivery policy form not found" });
+      }
+      serviceDeliveryForm.hrFeedback = hrFeedback;
+      serviceDeliveryForm.status = "under_review";
+      await serviceDeliveryForm.save();
+      return res.status(200).json({
+        message: "HR feedback saved successfully",
+        serviceDeliveryPolicy: serviceDeliveryForm,
+      });
     }
 
     // Map form data to schema fields for Service Delivery Policy
@@ -439,11 +456,6 @@ router.post("/save-service-delivery-policy", async (req, res) => {
       status,
     };
 
-    // Find existing form or create new one
-    let serviceDeliveryForm = await ServiceDeliveryPolicy.findOne({
-      applicationId,
-    });
-
     if (serviceDeliveryForm) {
       // Update existing form with mapped data
       Object.assign(serviceDeliveryForm, mappedData);
@@ -456,7 +468,7 @@ router.post("/save-service-delivery-policy", async (req, res) => {
       });
     }
 
-    await serviceDeliveryForm.save();
+    await serviceDeliveryForm.save({ validateBeforeSave: status !== "draft" });
 
     // Update application progress
     if (status === "completed") {
@@ -705,7 +717,7 @@ router.post("/save-non-compete-agreement", async (req, res) => {
       });
     }
 
-    await nonCompeteForm.save();
+    await nonCompeteForm.save({ validateBeforeSave: status !== "draft" });
 
     // Update application progress
     if (status === "completed") {

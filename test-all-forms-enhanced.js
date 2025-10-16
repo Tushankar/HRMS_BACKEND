@@ -40,7 +40,7 @@ const connectDB = async () => {
   }
 };
 
-const BASE_URL = "http://localhost:1111/onboarding";
+const BASE_URL = "https://hrms-backend-vneb.onrender.com/onboarding";
 
 // Test data for each form
 const testData = {

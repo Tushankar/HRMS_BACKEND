@@ -6,7 +6,7 @@ This document provides complete API testing instructions for the HRMS Onboarding
 
 ## 🔧 Prerequisites
 
-- Server running on `http://localhost:1111`
+- Server running on `https://hrms-backend-vneb.onrender.com`
 - Employee ID: `67e0f8770c6feb6ba99d11d2`
 - Thunder Client or Postman installed
 - MongoDB connected
@@ -18,7 +18,7 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ### 1.1 Get/Create Application
 
 **Method:** `GET`  
-**URL:** `http://localhost:1111/onboarding/get-application/67e0f8770c6feb6ba99d11d2`
+**URL:** `https://hrms-backend-vneb.onrender.com/onboarding/get-application/67e0f8770c6feb6ba99d11d2`
 
 **Expected Response:**
 
@@ -65,7 +65,7 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ### 2.1 Save Employment Application
 
 **Method:** `POST`  
-**URL:** `http://localhost:1111/onboarding/save-employment-application`  
+**URL:** `https://hrms-backend-vneb.onrender.com/onboarding/save-employment-application`  
 **Headers:** `Content-Type: application/json`
 
 **Body:**
@@ -141,7 +141,7 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ### 2.2 Get Employment Application
 
 **Method:** `GET`  
-**URL:** `http://localhost:1111/onboarding/get-employment-application/YOUR_APPLICATION_ID`
+**URL:** `https://hrms-backend-vneb.onrender.com/onboarding/get-employment-application/YOUR_APPLICATION_ID`
 
 ---
 
@@ -150,7 +150,7 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ### 3.1 Save RN Job Description (Exhibit 1d)
 
 **Method:** `POST`  
-**URL:** `http://localhost:1111/onboarding/save-job-description`
+**URL:** `https://hrms-backend-vneb.onrender.com/onboarding/save-job-description`
 
 **Body:**
 
@@ -192,7 +192,7 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ### 3.2 Supervisor Sign Job Description
 
 **Method:** `PUT`  
-**URL:** `http://localhost:1111/onboarding/supervisor-sign-job-description/JOB_DESC_ID`
+**URL:** `https://hrms-backend-vneb.onrender.com/onboarding/supervisor-sign-job-description/JOB_DESC_ID`
 
 **Body:**
 
@@ -211,7 +211,7 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ### 3.3 Get Job Description by Type
 
 **Method:** `GET`  
-**URL:** `http://localhost:1111/onboarding/get-job-description/YOUR_APPLICATION_ID/RN`
+**URL:** `https://hrms-backend-vneb.onrender.com/onboarding/get-job-description/YOUR_APPLICATION_ID/RN`
 
 **Other job types:** Replace `RN` with `PCA`, `CNA`, or `LPN`
 
@@ -222,7 +222,7 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ### 4.1 Save I-9 Form
 
 **Method:** `POST`  
-**URL:** `http://localhost:1111/onboarding/save-i9-form`
+**URL:** `https://hrms-backend-vneb.onrender.com/onboarding/save-i9-form`
 
 **Body:**
 
@@ -260,7 +260,7 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ### 5.1 Save W-4 Form (Exhibit 12a)
 
 **Method:** `POST`  
-**URL:** `http://localhost:1111/onboarding/save-w4-form`
+**URL:** `https://hrms-backend-vneb.onrender.com/onboarding/save-w4-form`
 
 **Body:**
 
@@ -303,7 +303,7 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ### 5.2 Save W-9 Form (Exhibit 12b)
 
 **Method:** `POST`  
-**URL:** `http://localhost:1111/onboarding/save-w9-form`
+**URL:** `https://hrms-backend-vneb.onrender.com/onboarding/save-w9-form`
 
 **Body:**
 
@@ -346,7 +346,7 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ### 6.1 Save Emergency Contact (Exhibit 13)
 
 **Method:** `POST`  
-**URL:** `http://localhost:1111/onboarding/save-emergency-contact`
+**URL:** `https://hrms-backend-vneb.onrender.com/onboarding/save-emergency-contact`
 
 **Body:**
 
@@ -399,7 +399,7 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ### 6.2 Save Direct Deposit (Exhibit 14)
 
 **Method:** `POST`  
-**URL:** `http://localhost:1111/onboarding/save-direct-deposit`
+**URL:** `https://hrms-backend-vneb.onrender.com/onboarding/save-direct-deposit`
 
 **Body:**
 
@@ -444,7 +444,7 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ### 7.1 Save Misconduct Statement (Exhibit 2)
 
 **Method:** `POST`  
-**URL:** `http://localhost:1111/onboarding/save-misconduct-statement`
+**URL:** `https://hrms-backend-vneb.onrender.com/onboarding/save-misconduct-statement`
 
 **Body:**
 
@@ -482,7 +482,7 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ### 7.2 Save Code of Ethics (Exhibit 3)
 
 **Method:** `POST`  
-**URL:** `http://localhost:1111/onboarding/save-code-of-ethics`
+**URL:** `https://hrms-backend-vneb.onrender.com/onboarding/save-code-of-ethics`
 
 **Body:**
 
@@ -523,7 +523,7 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ### 7.3 Save Service Delivery Policy (Exhibit 4)
 
 **Method:** `POST`  
-**URL:** `http://localhost:1111/onboarding/save-service-delivery-policy`
+**URL:** `https://hrms-backend-vneb.onrender.com/onboarding/save-service-delivery-policy`
 
 **Body:**
 
@@ -576,7 +576,7 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ### 7.4 Save Non-Compete Agreement (Exhibit 5)
 
 **Method:** `POST`  
-**URL:** `http://localhost:1111/onboarding/save-non-compete-agreement`
+**URL:** `https://hrms-backend-vneb.onrender.com/onboarding/save-non-compete-agreement`
 
 **Body:**
 
@@ -626,7 +626,7 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ### 8.1 Save Background Check (Exhibit 7)
 
 **Method:** `POST`  
-**URL:** `http://localhost:1111/onboarding/save-background-check`
+**URL:** `https://hrms-backend-vneb.onrender.com/onboarding/save-background-check`
 
 **Body:**
 
@@ -675,7 +675,7 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ### 8.2 Save TB Symptom Screen (Exhibit 9)
 
 **Method:** `POST`  
-**URL:** `http://localhost:1111/onboarding/save-tb-symptom-screen`
+**URL:** `https://hrms-backend-vneb.onrender.com/onboarding/save-tb-symptom-screen`
 
 **Body:**
 
@@ -721,7 +721,7 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ### 8.3 Save Orientation Checklist (Exhibit 6b)
 
 **Method:** `POST`  
-**URL:** `http://localhost:1111/onboarding/save-orientation-checklist`
+**URL:** `https://hrms-backend-vneb.onrender.com/onboarding/save-orientation-checklist`
 
 **Body:**
 
@@ -772,17 +772,17 @@ This document provides complete API testing instructions for the HRMS Onboarding
 ### 9.1 Submit Application to HR
 
 **Method:** `PUT`  
-**URL:** `http://localhost:1111/onboarding/submit-application/YOUR_APPLICATION_ID`
+**URL:** `https://hrms-backend-vneb.onrender.com/onboarding/submit-application/YOUR_APPLICATION_ID`
 
 ### 9.2 Get All Applications (HR View)
 
 **Method:** `GET`  
-**URL:** `http://localhost:1111/onboarding/get-all-applications`
+**URL:** `https://hrms-backend-vneb.onrender.com/onboarding/get-all-applications`
 
 ### 9.3 Update Application Status (HR)
 
 **Method:** `PUT`  
-**URL:** `http://localhost:1111/onboarding/update-status/YOUR_APPLICATION_ID`
+**URL:** `https://hrms-backend-vneb.onrender.com/onboarding/update-status/YOUR_APPLICATION_ID`
 
 **Body:**
 
@@ -803,7 +803,7 @@ This document provides complete API testing instructions for the HRMS Onboarding
 After completing each form, check the progress:
 
 **Method:** `GET`  
-**URL:** `http://localhost:1111/onboarding/get-application/67e0f8770c6feb6ba99d11d2`
+**URL:** `https://hrms-backend-vneb.onrender.com/onboarding/get-application/67e0f8770c6feb6ba99d11d2`
 
 **Completion Percentage Calculation:**
 

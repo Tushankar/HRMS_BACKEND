@@ -189,7 +189,7 @@ In your backend terminal, after clicking Save, look for:
 
 ```bash
 # Test Save
-curl -X POST http://localhost:1111/onboarding/save-background-check \
+curl -X POST https://hrms-backend-vneb.onrender.com/onboarding/save-background-check \
   -H "Content-Type: application/json" \
   -d '{
     "applicationId": "68cd668621dec4327dd0d41f",
@@ -209,7 +209,7 @@ curl -X POST http://localhost:1111/onboarding/save-background-check \
   }'
 
 # Test Get
-curl http://localhost:1111/onboarding/get-background-check/68cd668621dec4327dd0d41f
+curl https://hrms-backend-vneb.onrender.com/onboarding/get-background-check/68cd668621dec4327dd0d41f
 ```
 
 ## 📸 What to Share with Me

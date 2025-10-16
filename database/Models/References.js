@@ -46,8 +46,16 @@ const ReferencesSchema = new mongoose.Schema(
     }],
     status: {
       type: String,
-      enum: ["draft", "completed"],
+      enum: ["draft", "completed", "submitted", "under_review", "approved", "rejected"],
       default: "draft",
+    },
+    hrFeedback: {
+      comment: { type: String },
+      reviewedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user",
+      },
+      reviewedAt: { type: Date }
     },
   },
   {

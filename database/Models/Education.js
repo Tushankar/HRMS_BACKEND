@@ -15,19 +15,15 @@ const EducationSchema = new mongoose.Schema(
     educations: [{
       institutionName: {
         type: String,
-        required: true,
       },
       degree: {
         type: String,
-        required: true,
       },
       fieldOfStudy: {
         type: String,
-        required: true,
       },
       startDate: {
         type: Date,
-        required: true,
       },
       endDate: {
         type: Date,
@@ -41,7 +37,6 @@ const EducationSchema = new mongoose.Schema(
       },
       location: {
         type: String,
-        required: true,
       },
       certificate: {
         type: String,
@@ -49,8 +44,16 @@ const EducationSchema = new mongoose.Schema(
     }],
     status: {
       type: String,
-      enum: ["draft", "completed"],
+      enum: ["draft", "completed", "submitted", "under_review", "approved", "rejected"],
       default: "draft",
+    },
+    hrFeedback: {
+      comment: { type: String },
+      reviewedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user",
+      },
+      reviewedAt: { type: Date }
     },
   },
   {

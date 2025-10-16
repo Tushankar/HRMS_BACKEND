@@ -14,50 +14,36 @@ const MisconductStatementSchema = new mongoose.Schema(
       required: true,
     },
 
-    // Staff Information
-    staffInfo: {
-      staffTitle: { type: String },
-      employeeName: { type: String },
-      employmentPosition: { type: String },
+    // Admin uploaded template file
+    adminUploadedFile: {
+      filename: { type: String },
+      originalName: { type: String },
+      path: { type: String },
+      mimeType: { type: String },
+      uploadedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user",
+      },
+      uploadedAt: { type: Date },
     },
 
-    // Employee Acknowledgment / Statement
-    acknowledgment: {
-      understandsCodeOfConduct: { type: Boolean, default: false }, // "I must comply with ... Code of Conduct"
-      noMisconductHistory: { type: Boolean, default: false }, // "I have never shown misconduct or abuse"
-      formReadAndUnderstood: { type: Boolean, default: false }, // "I acknowledge ... read and understood"
+    // Employee's downloaded and signed file
+    employeeUploadedFile: {
+      filename: { type: String },
+      originalName: { type: String },
+      path: { type: String },
+      mimeType: { type: String },
+      uploadedAt: { type: Date },
     },
 
-    // Employee Signature Section
-    employeeSignature: {
-      printedName: { type: String },
-      position: { type: String },
-      signature: { type: String },
-      date: { type: Date },
-    },
-
-    // Witness / Verifier Statement
-    verifier: {
-      statement: { type: String }, // e.g., "has never been shown to have exhibited..."
-      printedName: { type: String },
-      signature: { type: String },
-      date: { type: Date },
-    },
-
-    // Notary Affidavit
-    notaryInfo: {
-      state: { type: String, default: "Georgia" }, // fixed in form
-      day: { type: Number },
-      month: { type: String },
-      year: { type: Number },
-      notarySignature: { type: String },
-      notarySeal: { type: String }, // optional (digital seal path/reference)
-    },
+    // Track employee's download activity
+    downloadedAt: { type: Date },
+    downloadCount: { type: Number, default: 0 },
 
     status: {
       type: String,
-      enum: ["draft", "completed", "submitted", "under_review", "approved", "rejected"],
-      default: "draft",
+      enum: ["pending", "downloaded", "in_progress", "submitted", "under_review", "approved", "rejected"],
+      default: "pending",
     },
 
     // HR Review and Feedback
@@ -72,6 +58,14 @@ const MisconductStatementSchema = new mongoose.Schema(
       reviewedAt: {
         type: Date,
       },
+    },
+
+    // Submission tracking
+    submittedAt: { type: Date },
+    reviewedAt: { type: Date },
+    reviewedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
     },
   },
   { timestamps: true }

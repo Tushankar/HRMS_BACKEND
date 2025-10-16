@@ -21,6 +21,7 @@ const PCAJobDescription = require("../../database/Models/PCAJobDescription");
 const CNAJobDescription = require("../../database/Models/CNAJobDescription");
 const LPNJobDescription = require("../../database/Models/LPNJobDescription");
 const RNJobDescription = require("../../database/Models/RNJobDescription");
+const PCATrainingQuestions = require("../../database/Models/PCATrainingQuestions");
 const WorkExperience = require("../../database/Models/WorkExperience");
 const Education = require("../../database/Models/Education");
 const References = require("../../database/Models/References");
@@ -29,6 +30,7 @@ const PositionType = require("../../database/Models/PositionType");
 const OrientationPresentation = require("../../database/Models/OrientationPresentation");
 const User = require("../../database/Models/Users");
 const { isFormEditable } = require("../../utils/formUtils");
+const { getFormKeysForPosition, getRelevantJobDescriptionForms } = require("../../utils/positionUtils");
 
 const router = express.Router();
 
@@ -140,6 +142,7 @@ router.get("/get-application/:employeeId", async (req, res) => {
       jobDescriptionCNA,
       jobDescriptionLPN,
       jobDescriptionRN,
+      pcaTrainingQuestions,
     ] = await Promise.all([
       PersonalInformation.findOne({ applicationId: application._id }),
       ProfessionalExperience.findOne({ applicationId: application._id }),
@@ -166,6 +169,7 @@ router.get("/get-application/:employeeId", async (req, res) => {
       CNAJobDescription.findOne({ applicationId: application._id }),
       LPNJobDescription.findOne({ applicationId: application._id }),
       RNJobDescription.findOne({ applicationId: application._id }),
+      PCATrainingQuestions.findOne({ applicationId: application._id }),
     ]);
 
     // Create default job description forms if they don't exist
@@ -173,6 +177,7 @@ router.get("/get-application/:employeeId", async (req, res) => {
     let jobDescriptionCNACreated = jobDescriptionCNA;
     let jobDescriptionLPNCreated = jobDescriptionLPN;
     let jobDescriptionRNCreated = jobDescriptionRN;
+    let pcaTrainingQuestionsCreated = pcaTrainingQuestions;
 
     if (!jobDescriptionPCA) {
       jobDescriptionPCACreated = new PCAJobDescription({
@@ -208,6 +213,16 @@ router.get("/get-application/:employeeId", async (req, res) => {
         status: "draft",
       });
       await jobDescriptionRNCreated.save();
+    }
+
+    // Create PCA Training Questions if it doesn't exist
+    if (!pcaTrainingQuestions) {
+      pcaTrainingQuestionsCreated = new PCATrainingQuestions({
+        applicationId: application._id,
+        employeeId: actualEmployeeId,
+        status: "pending",
+      });
+      await pcaTrainingQuestionsCreated.save();
     }
 
     // Transform I9 form from nested to flat structure for frontend compatibility
@@ -497,6 +512,17 @@ router.get("/get-application/:employeeId", async (req, res) => {
       ["draft"].includes(application.applicationStatus) &&
       application.applicationStatus !== "approved";
 
+    // Get position type to filter relevant forms
+    const selectedPosition = positionType?.positionAppliedFor || "";
+    console.log('🎯 [Backend] Selected Position:', selectedPosition);
+    
+    const relevantJobDescriptionForms = getRelevantJobDescriptionForms(selectedPosition);
+    console.log('📝 [Backend] Relevant Job Description Forms:', relevantJobDescriptionForms);
+    
+    const isPCA = selectedPosition === 'PCA';
+    console.log('🎓 [Backend] Is PCA:', isPCA);
+    console.log('📚 [Backend] PCA Training Questions exists:', !!pcaTrainingQuestionsCreated);
+
     const response = {
       application,
       isEditable, // Add editable status
@@ -681,42 +707,51 @@ router.get("/get-application/:employeeId", async (req, res) => {
               ),
             }
           : null,
-        jobDescriptionPCA: jobDescriptionPCACreated
-          ? {
-              ...jobDescriptionPCACreated.toObject(),
-              isEditable: isFormEditable(
-                jobDescriptionPCACreated.status,
-                application.applicationStatus
-              ),
-            }
-          : null,
-        jobDescriptionCNA: jobDescriptionCNACreated
-          ? {
-              ...jobDescriptionCNACreated.toObject(),
-              isEditable: isFormEditable(
-                jobDescriptionCNACreated.status,
-                application.applicationStatus
-              ),
-            }
-          : null,
-        jobDescriptionLPN: jobDescriptionLPNCreated
-          ? {
-              ...jobDescriptionLPNCreated.toObject(),
-              isEditable: isFormEditable(
-                jobDescriptionLPNCreated.status,
-                application.applicationStatus
-              ),
-            }
-          : null,
-        jobDescriptionRN: jobDescriptionRNCreated
-          ? {
-              ...jobDescriptionRNCreated.toObject(),
-              isEditable: isFormEditable(
-                jobDescriptionRNCreated.status,
-                application.applicationStatus
-              ),
-            }
-          : null,
+        // Only include job description forms relevant to selected position
+        ...(relevantJobDescriptionForms.includes('jobDescriptionPCA') && {
+          jobDescriptionPCA: jobDescriptionPCACreated
+            ? {
+                ...jobDescriptionPCACreated.toObject(),
+                isEditable: isFormEditable(
+                  jobDescriptionPCACreated.status,
+                  application.applicationStatus
+                ),
+              }
+            : null,
+        }),
+        ...(relevantJobDescriptionForms.includes('jobDescriptionCNA') && {
+          jobDescriptionCNA: jobDescriptionCNACreated
+            ? {
+                ...jobDescriptionCNACreated.toObject(),
+                isEditable: isFormEditable(
+                  jobDescriptionCNACreated.status,
+                  application.applicationStatus
+                ),
+              }
+            : null,
+        }),
+        ...(relevantJobDescriptionForms.includes('jobDescriptionLPN') && {
+          jobDescriptionLPN: jobDescriptionLPNCreated
+            ? {
+                ...jobDescriptionLPNCreated.toObject(),
+                isEditable: isFormEditable(
+                  jobDescriptionLPNCreated.status,
+                  application.applicationStatus
+                ),
+              }
+            : null,
+        }),
+        ...(relevantJobDescriptionForms.includes('jobDescriptionRN') && {
+          jobDescriptionRN: jobDescriptionRNCreated
+            ? {
+                ...jobDescriptionRNCreated.toObject(),
+                isEditable: isFormEditable(
+                  jobDescriptionRNCreated.status,
+                  application.applicationStatus
+                ),
+              }
+            : null,
+        }),
         workExperience: workExperience
           ? {
               ...workExperience.toObject(),
@@ -726,8 +761,26 @@ router.get("/get-application/:employeeId", async (req, res) => {
               ),
             }
           : null,
+        // Only include PCA Training Questions for PCA position
+        ...(isPCA && {
+          pcaTrainingQuestions: pcaTrainingQuestionsCreated
+            ? {
+                ...pcaTrainingQuestionsCreated.toObject(),
+                isEditable: isFormEditable(
+                  pcaTrainingQuestionsCreated.status,
+                  application.applicationStatus
+                ),
+              }
+            : null,
+        }),
       },
     };
+
+    // Log what's being returned for PCA users
+    if (isPCA) {
+      console.log('✅ [Backend] Returning PCA Training Questions:', !!response.forms.pcaTrainingQuestions);
+      console.log('📊 [Backend] PCA Training Questions Status:', response.forms.pcaTrainingQuestions?.status);
+    }
 
     res.status(200).json({
       message: "Application data retrieved successfully",

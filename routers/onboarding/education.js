@@ -6,7 +6,7 @@ const OnboardingApplication = require("../../database/Models/OnboardingApplicati
 // Save education
 router.post("/education/save", async (req, res) => {
   try {
-    let { applicationId, employeeId, educations, status } = req.body;
+    let { applicationId, employeeId, educations, status, hrFeedback } = req.body;
 
     if (!employeeId) {
       return res.status(400).json({
@@ -39,15 +39,19 @@ router.post("/education/save", async (req, res) => {
     if (education) {
       education.educations = educations;
       education.status = status || "draft";
-      await education.save();
+      if (hrFeedback) {
+        education.hrFeedback = hrFeedback;
+      }
+      await education.save({ validateBeforeSave: status !== "draft" });
     } else {
       education = new Education({
         applicationId,
         employeeId,
         educations,
         status: status || "draft",
+        hrFeedback: hrFeedback || undefined,
       });
-      await education.save();
+      await education.save({ validateBeforeSave: status !== "draft" });
     }
 
     if (status === "completed") {

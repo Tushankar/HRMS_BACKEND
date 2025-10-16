@@ -26,8 +26,7 @@ const EmploymentApplicationSchema = new mongoose.Schema(
       phone: { type: String },
       email: { type: String },
       ssn: { type: String },
-      positionApplied: { type: String },
-      positionType: { type: String }, // Position Type: PCA, CNA, LPN, RN, etc.
+
       desiredSalary: { type: String },
       dateAvailable: { type: Date },
       employmentType: { type: String },
@@ -107,17 +106,7 @@ const EmploymentApplicationSchema = new mongoose.Schema(
       },
     ],
 
-    // Military Service
-    militaryService: {
-      branch: { type: String },
-      from: { type: String },
-      to: { type: String },
-      rankAtDischarge: { type: String },
-      typeOfDischarge: { type: String },
-      otherThanHonorable: { type: String },
-      mayContactSupervisor: { type: String },
-      reasonForLeaving: { type: String },
-    },
+
 
     // Disclaimer and Signature
     signature: { type: String },

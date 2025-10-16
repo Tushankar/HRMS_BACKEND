@@ -5,7 +5,7 @@ const OnboardingApplication = require("../../database/Models/OnboardingApplicati
 
 router.post("/legal-disclosures/save", async (req, res) => {
   try {
-    let { applicationId, employeeId, status, ...disclosures } = req.body;
+    let { applicationId, employeeId, status, hrFeedback, ...disclosures } = req.body;
 
     if (!employeeId) {
       return res.status(400).json({
@@ -31,15 +31,19 @@ router.post("/legal-disclosures/save", async (req, res) => {
     if (legalDisclosures) {
       Object.assign(legalDisclosures, disclosures);
       legalDisclosures.status = status || "draft";
-      await legalDisclosures.save();
+      if (hrFeedback) {
+        legalDisclosures.hrFeedback = hrFeedback;
+      }
+      await legalDisclosures.save({ validateBeforeSave: status !== "draft" });
     } else {
       legalDisclosures = new LegalDisclosures({
         applicationId,
         employeeId,
         ...disclosures,
         status: status || "draft",
+        hrFeedback: hrFeedback || undefined,
       });
-      await legalDisclosures.save();
+      await legalDisclosures.save({ validateBeforeSave: status !== "draft" });
     }
 
     if (status === "completed") {

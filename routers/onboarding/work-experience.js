@@ -62,7 +62,7 @@ router.post("/work-experience/save", async (req, res) => {
       console.log("   - New count:", workExperiences.length);
       workExp.workExperiences = workExperiences;
       workExp.status = status || "draft";
-      await workExp.save();
+      await workExp.save({ validateBeforeSave: status !== "draft" });
       console.log("✅ [WorkExperience] Work experience updated");
     } else {
       console.log("📝 [WorkExperience] Creating new work experience document");
@@ -72,7 +72,7 @@ router.post("/work-experience/save", async (req, res) => {
         workExperiences,
         status: status || "draft",
       });
-      await workExp.save();
+      await workExp.save({ validateBeforeSave: status !== "draft" });
       console.log("✅ [WorkExperience] New work experience created:", workExp._id);
     }
 

@@ -49,6 +49,47 @@ router.get("/get-w4-template", async (req, res) => {
   }
 });
 
+// Save W4 form status
+router.post("/save-w4-form", async (req, res) => {
+  try {
+    const { applicationId, employeeId, status = "draft", hrFeedback } = req.body;
+    const updateData = { status };
+    if (hrFeedback) {
+      updateData.hrFeedback = hrFeedback;
+    }
+    const w4Form = await W4Form.findOneAndUpdate(
+      { applicationId, employeeId },
+      updateData,
+      { new: true, upsert: true, validateBeforeSave: status !== "draft" }
+    );
+    res.json({ success: true, w4Form });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get individual W4 submission by ID
+router.get("/get-w4-submission/:id", async (req, res) => {
+  try {
+    const submission = await W4Form.findById(req.params.id)
+      .populate("employeeId", "firstName lastName email");
+    res.json({ success: true, submission });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Alias endpoint for clarity
+router.get("/get-w4-submission-by-id/:id", async (req, res) => {
+  try {
+    const submission = await W4Form.findById(req.params.id)
+      .populate("employeeId", "firstName lastName email");
+    res.json({ success: true, submission });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Employee upload signed W4
 router.post("/employee-upload-signed-w4", upload.single("file"), async (req, res) => {
   try {
@@ -107,6 +148,25 @@ router.get("/get-w9-template", async (req, res) => {
   try {
     const template = await W9FormTemplate.findOne({ isActive: true });
     res.json({ template });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Save W9 form status
+router.post("/save-w9-form", async (req, res) => {
+  try {
+    const { applicationId, employeeId, status = "draft", hrFeedback } = req.body;
+    const updateData = { status };
+    if (hrFeedback) {
+      updateData.hrFeedback = hrFeedback;
+    }
+    const w9Form = await W9Form.findOneAndUpdate(
+      { applicationId, employeeId },
+      updateData,
+      { new: true, upsert: true, validateBeforeSave: status !== "draft" }
+    );
+    res.json({ success: true, w9Form });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -172,6 +232,27 @@ router.get("/get-i9-template", async (req, res) => {
     res.json({ template });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+});
+
+// Save I9 form status
+router.post("/save-i9-form", async (req, res) => {
+  try {
+    const { applicationId, employeeId, status = "draft", hrFeedback } = req.body;
+    console.log("I9 Form save request:", { applicationId, employeeId, status, hrFeedback });
+    const updateData = { status };
+    if (hrFeedback) {
+      updateData.hrFeedback = hrFeedback;
+    }
+    const i9Form = await I9Form.findOneAndUpdate(
+      { applicationId, employeeId },
+      updateData,
+      { new: true, upsert: true, validateBeforeSave: status !== "draft" }
+    );
+    res.json({ success: true, i9Form });
+  } catch (error) {
+    console.error("Error saving I9 form:", error);
+    res.status(500).json({ message: error.message, stack: error.stack });
   }
 });
 

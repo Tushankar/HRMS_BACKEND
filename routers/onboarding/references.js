@@ -5,7 +5,7 @@ const OnboardingApplication = require("../../database/Models/OnboardingApplicati
 
 router.post("/references/save", async (req, res) => {
   try {
-    let { applicationId, employeeId, references, status } = req.body;
+    let { applicationId, employeeId, references, status, hrFeedback } = req.body;
 
     if (!employeeId) {
       return res.status(400).json({
@@ -38,15 +38,19 @@ router.post("/references/save", async (req, res) => {
     if (referencesDoc) {
       referencesDoc.references = references;
       referencesDoc.status = status || "draft";
-      await referencesDoc.save();
+      if (hrFeedback) {
+        referencesDoc.hrFeedback = hrFeedback;
+      }
+      await referencesDoc.save({ validateBeforeSave: status !== "draft" });
     } else {
       referencesDoc = new References({
         applicationId,
         employeeId,
         references,
         status: status || "draft",
+        hrFeedback: hrFeedback || undefined,
       });
-      await referencesDoc.save();
+      await referencesDoc.save({ validateBeforeSave: status !== "draft" });
     }
 
     if (status === "completed") {
