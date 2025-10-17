@@ -524,6 +524,7 @@ router.get("/hr-get-all-code-of-ethics-submissions", async (req, res) => {
 // Save or update Service Delivery Policy form
 router.post("/save-service-delivery-policy", async (req, res) => {
   try {
+<<<<<<< HEAD
     const {
       applicationId,
       employeeId,
@@ -531,6 +532,9 @@ router.post("/save-service-delivery-policy", async (req, res) => {
       hrFeedback,
       status = "draft",
     } = req.body;
+=======
+    const { applicationId, employeeId, formData, hrFeedback, status = "draft" } = req.body;
+>>>>>>> 2b64909206c6db504362635dd2490b80343b4bd1
 
     if (!applicationId || !employeeId) {
       return res
@@ -547,16 +551,24 @@ router.post("/save-service-delivery-policy", async (req, res) => {
     }
 
     // Find existing form
+<<<<<<< HEAD
     let serviceDeliveryForm = await ServiceDeliveryPolicy.findOne({
       applicationId,
     });
+=======
+    let serviceDeliveryForm = await ServiceDeliveryPolicy.findOne({ applicationId });
+>>>>>>> 2b64909206c6db504362635dd2490b80343b4bd1
 
     // Handle HR feedback-only update
     if (!formData && hrFeedback) {
       if (!serviceDeliveryForm) {
+<<<<<<< HEAD
         return res
           .status(404)
           .json({ message: "Service delivery policy form not found" });
+=======
+        return res.status(404).json({ message: "Service delivery policy form not found" });
+>>>>>>> 2b64909206c6db504362635dd2490b80343b4bd1
       }
       serviceDeliveryForm.hrFeedback = hrFeedback;
       serviceDeliveryForm.status = "under_review";

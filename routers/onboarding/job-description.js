@@ -960,6 +960,7 @@ router.get("/get-job-description-template/:positionType", async (req, res) => {
   try {
     const { positionType } = req.params;
     let template;
+<<<<<<< HEAD
 
     switch (positionType.toUpperCase()) {
       case "PCA":
@@ -981,10 +982,26 @@ router.get("/get-job-description-template/:positionType", async (req, res) => {
         template = await RNJobDescriptionTemplate.findOne({
           isActive: true,
         }).sort({ createdAt: -1 });
+=======
+    
+    switch (positionType.toUpperCase()) {
+      case "PCA":
+        template = await PCAJobDescriptionTemplate.findOne({ isActive: true }).sort({ createdAt: -1 });
+        break;
+      case "CNA":
+        template = await CNAJobDescriptionTemplate.findOne({ isActive: true }).sort({ createdAt: -1 });
+        break;
+      case "LPN":
+        template = await LPNJobDescriptionTemplate.findOne({ isActive: true }).sort({ createdAt: -1 });
+        break;
+      case "RN":
+        template = await RNJobDescriptionTemplate.findOne({ isActive: true }).sort({ createdAt: -1 });
+>>>>>>> 2b64909206c6db504362635dd2490b80343b4bd1
         break;
       default:
         return res.status(400).json({ message: "Invalid position type" });
     }
+<<<<<<< HEAD
 
     if (!template) {
       return res.status(404).json({ message: "No template found" });
@@ -998,10 +1015,22 @@ router.get("/get-job-description-template/:positionType", async (req, res) => {
     res
       .status(500)
       .json({ message: "Internal server error", error: error.message });
+=======
+    
+    if (!template) {
+      return res.status(404).json({ message: "No template found" });
+    }
+    
+    res.status(200).json({ message: "Template retrieved successfully", template });
+  } catch (error) {
+    console.error("Error getting template:", error);
+    res.status(500).json({ message: "Internal server error", error: error.message });
+>>>>>>> 2b64909206c6db504362635dd2490b80343b4bd1
   }
 });
 
 // Unified endpoint - Employee upload signed job description
+<<<<<<< HEAD
 router.post(
   "/employee-upload-signed-job-description",
   upload.single("file"),
@@ -1059,6 +1088,55 @@ router.post(
     }
   }
 );
+=======
+router.post("/employee-upload-signed-job-description", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+    
+    const { applicationId, employeeId, positionType } = req.body;
+    
+    if (!applicationId) return res.status(400).json({ message: "Application ID is required" });
+    if (!positionType) return res.status(400).json({ message: "Position type is required" });
+    
+    let jobDescription;
+    const JobModel = getJobDescriptionModel(positionType);
+    
+    jobDescription = await JobModel.findOne({ applicationId });
+    
+    if (!jobDescription) {
+      jobDescription = new JobModel({ applicationId, employeeId });
+    }
+    
+    jobDescription.employeeUploadedForm = {
+      filename: req.file.originalname,
+      filePath: req.file.path,
+      uploadedAt: new Date(),
+    };
+    jobDescription.status = "submitted";
+    
+    await jobDescription.save();
+    
+    // Update application completion
+    const application = await OnboardingApplication.findById(applicationId);
+    if (application) {
+      const formKey = `jobDescription${positionType.toUpperCase()}`;
+      if (!application.completedForms.includes(formKey)) {
+        application.completedForms.push(formKey);
+      }
+      application.completionPercentage = application.calculateCompletionPercentage();
+      await application.save();
+    }
+    
+    res.status(200).json({ 
+      message: `Signed ${positionType} Job Description form uploaded successfully`, 
+      jobDescription 
+    });
+  } catch (error) {
+    console.error("Error uploading signed form:", error);
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+});
+>>>>>>> 2b64909206c6db504362635dd2490b80343b4bd1
 
 // HR clear PCA submission
 router.delete("/hr-clear-pca-submission/:id", async (req, res) => {
@@ -1112,6 +1190,7 @@ router.delete("/hr-clear-rn-submission/:id", async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 // Save HR notes for job description
 router.post("/save-job-description-hr-notes", async (req, res) => {
   try {
@@ -1178,6 +1257,8 @@ router.post("/save-job-description-hr-notes", async (req, res) => {
   }
 });
 
+=======
+>>>>>>> 2b64909206c6db504362635dd2490b80343b4bd1
 // Save job description status (draft/completed)
 router.post("/job-description/save-status", async (req, res) => {
   try {
@@ -1205,6 +1286,7 @@ router.post("/job-description/save-status", async (req, res) => {
       await jobDesc.save({ validateBeforeSave: status !== "draft" });
     }
 
+<<<<<<< HEAD
     // Update application progress if status is completed
     if (status === "completed") {
       const application = await OnboardingApplication.findById(applicationId);
@@ -1227,6 +1309,8 @@ router.post("/job-description/save-status", async (req, res) => {
       }
     }
 
+=======
+>>>>>>> 2b64909206c6db504362635dd2490b80343b4bd1
     res.status(200).json({
       success: true,
       message: `Job description status saved as ${status}`,
@@ -1242,6 +1326,7 @@ router.post("/job-description/save-status", async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 // Employee remove uploaded job description
 router.post("/job-description/remove-upload", async (req, res) => {
   try {
@@ -1372,4 +1457,6 @@ router.post("/remove-job-description-upload", async (req, res) => {
   }
 });
 
+=======
+>>>>>>> 2b64909206c6db504362635dd2490b80343b4bd1
 module.exports = router;

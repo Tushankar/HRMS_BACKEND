@@ -104,10 +104,14 @@ router.post("/work-experience/save", async (req, res) => {
         status: status || "draft",
       });
       await workExp.save({ validateBeforeSave: status !== "draft" });
+<<<<<<< HEAD
       console.log(
         "✅ [WorkExperience] New work experience created:",
         workExp._id
       );
+=======
+      console.log("✅ [WorkExperience] New work experience created:", workExp._id);
+>>>>>>> 2b64909206c6db504362635dd2490b80343b4bd1
     }
 
     // Update OnboardingApplication if completed

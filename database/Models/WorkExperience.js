@@ -72,6 +72,7 @@ const WorkExperienceSchema = new mongoose.Schema(
     ],
     status: {
       type: String,
+<<<<<<< HEAD
       enum: [
         "draft",
         "completed",
@@ -80,6 +81,9 @@ const WorkExperienceSchema = new mongoose.Schema(
         "approved",
         "rejected",
       ],
+=======
+      enum: ["draft", "completed", "submitted", "under_review", "approved", "rejected"],
+>>>>>>> 2b64909206c6db504362635dd2490b80343b4bd1
       default: "draft",
     },
     hrFeedback: {
@@ -88,7 +92,11 @@ const WorkExperienceSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: "user",
       },
+<<<<<<< HEAD
       reviewedAt: { type: Date },
+=======
+      reviewedAt: { type: Date }
+>>>>>>> 2b64909206c6db504362635dd2490b80343b4bd1
     },
   },
   {
